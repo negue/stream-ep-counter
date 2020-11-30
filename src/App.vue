@@ -215,7 +215,10 @@ export default class App extends Vue {
   }
 
   async getToken () {
-    const loginInfo = await twitch.login();
+    const {userId} = await twitch.login();
+    if (userId) {
+      this.loggedIn = true;
+    }
   }
 }
 </script>

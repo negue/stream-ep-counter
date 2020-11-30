@@ -11,7 +11,8 @@ export class TwitchApiHandler {
     // todo
   }
 
-  async login () {
+  // todo type
+  async login (): Promise<any> {
     return new Promise((resolve, reject) => {
       const userId = localStorage.getItem('userId');
 
