@@ -3,10 +3,13 @@
     <div class="nes-field">
       <label for="name_field"> Topic </label>
       <input type="text" id="name_field" class="nes-input"
-             :class="{'is-error': !workingTopic.title}"
+             :class="{'is-error': isTitleInvalid }"
              :required="!workingTopic.title"
              autocomplete="off"
              v-model="workingTopic.title">
+      <span class="nes-text is-error" v-if="isTitleInvalid">
+        {{ notValidExplanation }}
+      </span>
     </div>
 
     <div class="nes-field">
@@ -26,23 +29,27 @@
 
     <br>
 
-    <tags-input element-id="tags" ref="tagsInput"
-                :value="currentTags"
-                @tags-updated="updateTags($event)"
-                :only-existing-tags="true"
-                id-field="id"
-                text-field="name"
-                :existing-tags="allTags"
-                :typeahead="true"
-                placeholder="Select tags"
-    :typeahead-activation-threshold="0"
-    >
-      <template v-slot:selected-tag="{ tag, index, removeTag }">
-        {{tag.name}}
+    <div class="nes-field">
+      <label>Tags</label>
+      <tags-input element-id="tags" ref="tagsInput"
+                  :value="currentTags"
+                  @tags-updated="updateTags($event)"
+                  :only-existing-tags="true"
+                  id-field="id"
+                  text-field="name"
+                  :existing-tags="allTags"
+                  :typeahead="true"
+                  placeholder="Select tags"
+                  :typeahead-activation-threshold="0"
+      >
+        <template v-slot:selected-tag="{ tag, index, removeTag }">
+          {{tag.name}}
           <span class="is-danger" @click.prevent="removeTag(index)">X</span>
 
-      </template>
-    </tags-input>
+        </template>
+      </tags-input>
+    </div>
+
 <br>
     <div v-if="workingTopic.gameName || workingTopic.tags">
       <br>
@@ -100,6 +107,22 @@ export default defineComponent({
       }
 
       return allTags;
+    },
+    isTitleInvalid (): boolean {
+      return !this.workingTopic.title || this.workingTopic.title.length > 140;
+    },
+    notValidExplanation (): string {
+      if (!this.workingTopic.title) {
+        return 'You need a title.';
+      }
+
+      const titleLength = this.workingTopic.title.length;
+
+      if (titleLength > 140) {
+        return `A title can be only 140 characters long. Current Length: ${titleLength}`;
+      }
+
+      return '';
     }
   },
   methods: {
@@ -107,7 +130,7 @@ export default defineComponent({
       this.$emit('cancel');
     },
     save () {
-      if (!this.workingTopic.title) {
+      if (this.isTitleInvalid) {
         return;
       }
 
@@ -183,6 +206,15 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 @import "~@voerro/vue-tagsinput/dist/style.css";
+
+.nes-field {
+  margin-bottom: 1rem;
+
+  .nes-text.is-error {
+    display: block;
+    margin-top: 1rem;
+  }
+}
 </style>
 
 <style lang="scss" >
