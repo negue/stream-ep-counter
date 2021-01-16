@@ -24,10 +24,29 @@
       <i>You need to use <code>{{counterPlaceholder}}</code> as placeholder. </i>
     </div>
 
+    <br>
+
+    <tags-input element-id="tags" ref="tagsInput"
+                :value="currentTags"
+                @tags-updated="updateTags($event)"
+                :only-existing-tags="true"
+                id-field="id"
+                text-field="name"
+                :existing-tags="allTags"
+                :typeahead="true"
+                placeholder="Select tags"
+    :typeahead-activation-threshold="0"
+    >
+      <template v-slot:selected-tag="{ tag, index, removeTag }">
+        {{tag.name}}
+          <span class="is-danger" @click.prevent="removeTag(index)">X</span>
+
+      </template>
+    </tags-input>
+<br>
     <div v-if="workingTopic.gameName || workingTopic.tags">
       <br>
       Game: {{workingTopic.gameName}} <br />
-      Tags: {{workingTopic.importTags ? workingTopic.importTags.map(t => t.name) :  workingTopic.tags?.split(',').map(id => state.tags[id]?.name)}}
       <br>
     </div>
 
@@ -49,8 +68,12 @@ import { defineComponent } from 'vue';
 import { TagData, Topic } from '@/types';
 import { store } from '@/state';
 import { twitch } from '@/twitch-instance';
+import TagsInput from '@voerro/vue-tagsinput';
 
 export default defineComponent({
+  components: {
+    TagsInput
+  },
   props: {
     topic: {
       type: Object as () => Topic,
@@ -64,7 +87,19 @@ export default defineComponent({
     return {
       workingTopic: { ...this.topic } as Topic,
       counterPlaceholder: '{{counter}}',
+      currentTags: [] as TagData[],
       state: store.state
+    }
+  },
+  computed: {
+    allTags (): TagData[] {
+      const allTags = [...Object.values(this.state.tags)];
+
+      if (this.workingTopic?.importTags) {
+        allTags.push(...this.workingTopic.importTags);
+      }
+
+      return allTags;
     }
   },
   methods: {
@@ -100,16 +135,52 @@ export default defineComponent({
 
       console.info({ tags, importedTags });
       this.workingTopic.importTags = importedTags;
+
+      this.currentTags = importedTags;
+    },
+    updateTagsFromTopic () {
+      // topic was changed
+      // set the current tags from the Topic
+      console.info({
+        topic: this.workingTopic,
+        state: JSON.stringify(this.state.tags) ?? 'no null value',
+        test: true
+      });
+
+      this.currentTags = this.workingTopic.tags
+        ?.split(',')
+        .map(id => this.state.tags[id])
+        .filter(t => !!t);
+
+      this.updateTagsToTopic();
+    },
+    updateTags () {
+      const tagsValue = (this.$refs as any).tagsInput.tags;
+
+      this.currentTags = tagsValue;
+
+      console.info(this.$refs);
+      console.info('SHOULD BE UPDATED?!!?', this.currentTags);
+
+      this.updateTagsToTopic();
+    },
+    updateTagsToTopic () {
+      this.workingTopic.tags = this.currentTags.map(t => t.id).join(',');
     }
   },
   watch: {
     topic (val) {
       this.workingTopic = { ...val } as Topic;
+
+      this.updateTagsFromTopic();
     }
+  },
+  mounted () {
+    this.updateTagsFromTopic();
   }
 })
 </script>
 
 <style lang="scss" scoped>
-
+@import "~@voerro/vue-tagsinput/dist/style.css";
 </style>
