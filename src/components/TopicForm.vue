@@ -3,13 +3,10 @@
     <div class="nes-field">
       <label for="name_field"> Topic </label>
       <input type="text" id="name_field" class="nes-input"
-             :class="{'is-error': isTitleInvalid }"
+             :class="{'is-error': !workingTopic.title }"
              :required="!workingTopic.title"
              autocomplete="off"
              v-model="workingTopic.title">
-      <span class="nes-text is-error" v-if="isTitleInvalid">
-        {{ notValidExplanation }}
-      </span>
     </div>
 
     <div class="nes-field">
@@ -19,6 +16,7 @@
       v-model="workingTopic.currentCounter">
     </div>
 
+    <div class="nes-field">
     <label for="textarea_field">Title-Template</label>
     <textarea id="textarea_field" class="nes-textarea"
               v-model="workingTopic.template"></textarea>
@@ -27,7 +25,10 @@
       <i>You need to use <code>{{counterPlaceholder}}</code> as placeholder. </i>
     </div>
 
-    <br>
+    <span class="nes-text is-error" v-if="isTemplateInvalid">
+        {{ notValidExplanation }}
+      </span>
+    </div>
 
     <div class="nes-field">
       <label>Tags</label>
@@ -76,6 +77,7 @@ import { TagData, Topic } from '@/types';
 import { store } from '@/state';
 import { twitch } from '@/twitch-instance';
 import TagsInput from '@voerro/vue-tagsinput';
+import { generateTitle } from '@/utils';
 
 export default defineComponent({
   components: {
@@ -108,18 +110,25 @@ export default defineComponent({
 
       return allTags;
     },
-    isTitleInvalid (): boolean {
-      return !this.workingTopic.title || this.workingTopic.title.length > 140;
+    isTemplateInvalid (): boolean {
+      return this.notValidExplanation !== '';
     },
     notValidExplanation (): string {
-      if (!this.workingTopic.title) {
-        return 'You need a title.';
+      const template = this.workingTopic.template;
+
+      if (!template) {
+        return 'You need a template.';
       }
 
-      const titleLength = this.workingTopic.title.length;
+      const generatedTitle = generateTitle({
+        ...this.workingTopic,
+        currentCounter: 100
+      });
+
+      const titleLength = generatedTitle.length;
 
       if (titleLength > 140) {
-        return `A title can be only 140 characters long. Current Length: ${titleLength}`;
+        return `A generated topic can be only 140 characters long. (Using 100 as counter) - Current Length: ${titleLength}`;
       }
 
       return '';
@@ -130,7 +139,11 @@ export default defineComponent({
       this.$emit('cancel');
     },
     save () {
-      if (this.isTitleInvalid) {
+      if (!this.workingTopic.title) {
+        return;
+      }
+
+      if (this.isTemplateInvalid) {
         return;
       }
 
@@ -213,7 +226,12 @@ export default defineComponent({
   .nes-text.is-error {
     display: block;
     margin-top: 1rem;
+    margin-left: 0.5rem;
   }
+}
+
+.nes-textarea {
+  min-height: 3rem;
 }
 </style>
 
