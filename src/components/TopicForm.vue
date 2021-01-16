@@ -1,5 +1,5 @@
 <template>
-  <div class="form-holder">
+  <div class="form-holder topic-form">
     <div class="nes-field">
       <label for="name_field"> Topic </label>
       <input type="text" id="name_field" class="nes-input"
@@ -150,7 +150,7 @@ export default defineComponent({
       this.currentTags = this.workingTopic.tags
         ?.split(',')
         .map(id => this.state.tags[id])
-        .filter(t => !!t);
+        .filter(t => !!t) ?? [];
 
       this.updateTagsToTopic();
     },
@@ -183,4 +183,17 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 @import "~@voerro/vue-tagsinput/dist/style.css";
+</style>
+
+<style lang="scss" >
+
+.topic-form {
+  .tags-input-root {
+    margin: 8px;
+
+    .tags-input {
+      border-radius: 0;
+    }
+  }
+}
 </style>
