@@ -31,6 +31,14 @@
     </div>
 
     <div class="nes-field">
+      <label>In Twitch Overview</label>
+      <span class="nes-text is-warning">
+        {{ generatedTitle.slice(0, 32) }}
+      </span>
+
+    </div>
+
+    <div class="nes-field">
       <label>Tags</label>
       <tags-input element-id="tags" ref="tagsInput"
                   :value="currentTags"
@@ -109,6 +117,11 @@ export default defineComponent({
       }
 
       return allTags;
+    },
+    generatedTitle (): string {
+      return generateTitle({
+        ...this.workingTopic
+      });
     },
     isTemplateInvalid (): boolean {
       return this.notValidExplanation !== '';
@@ -231,7 +244,7 @@ export default defineComponent({
 }
 
 .nes-textarea {
-  min-height: 3rem;
+  min-height: 10rem;
 }
 </style>
 
@@ -243,6 +256,11 @@ export default defineComponent({
 
     .tags-input {
       border-radius: 0;
+      margin-bottom: 0.5rem;
+    }
+
+    .tags-input-badge {
+      margin-bottom: 0.5rem;
     }
   }
 }

@@ -4,7 +4,7 @@
     <button type="button" class="nes-btn is-error" @click="$emit('delete-topic', topic)">X</button>
   </h4>
   <h5>
-    {{ generateTitle(topic) }} <br/>
+    <span class="nes-text is-warning">{{ generateTitle(topic).slice(0, 32) }}</span>{{ generateTitle(topic).slice(32) }} <br/>
   </h5>
 
   <br>
