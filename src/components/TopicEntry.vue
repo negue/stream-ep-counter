@@ -25,7 +25,7 @@
   <br>
   <br>
 
-  <span class="nes-text is-success">Last applied: {{ lastAppliedLabel }}</span> <br/>
+  <span class="nes-text is-success">{{ lastAppliedLabel }}</span> <br/>
   <button type="button" class="nes-btn is-warning" @click="$emit('increase-counter', topic)">Increase Counter</button>
   <button type="button"
           class="nes-btn"
@@ -72,7 +72,7 @@ export default defineComponent({
 
         const latestEntry = foundEntriesInHistory[0];
 
-        return `${latestEntry.lastTitle} - ${new Date(latestEntry.date!).toLocaleString()}`;
+        return `${new Date(latestEntry.date!).toLocaleString()} with the Title:  ${latestEntry.lastTitle}`;
       }
 
       console.info({ foundEntriesInHistory });
