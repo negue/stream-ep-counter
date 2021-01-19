@@ -79,11 +79,7 @@
 
         <p class="title">Changed history:</p>
         <closable-panel @cancel="showHistory = false">
-          <div v-for="(entry, index) of sortedHistory" :key="entry.id">
-            <hr v-if="index !== 0">
-            <h4> {{ entry.task }}</h4>
-            {{new Date(entry.date).toLocaleString()}}
-          </div>
+          <history-list></history-list>
         </closable-panel>
       </div>
     </div>
@@ -101,6 +97,7 @@ import { Topic } from '@/types';
 import { generateTitle } from '@/utils';
 import { clientId, twitch } from '@/twitch-instance';
 import TopicEntry from '@/components/TopicEntry.vue';
+import HistoryList from '@/components/HistoryList.vue';
 
 // TODO extract handler / instance
 
@@ -110,7 +107,8 @@ export const hashParams = new URLSearchParams(location.hash?.replace('#', ''));
   components: {
     TopicForm,
     ClosablePanel,
-    TopicEntry
+    TopicEntry,
+    HistoryList
   }
 })
 export default class App extends Vue {
@@ -137,25 +135,6 @@ export default class App extends Vue {
     } else {
       this.loggedIn = false;
     }
-  }
-
-  get sortedHistory () {
-    const newArray = [...this.state.history];
-
-    newArray.sort((a, b) => {
-      const aDate = Date.parse(a.date!.toString());
-      const bDate = Date.parse(b.date!.toString());
-
-      if (aDate < bDate) {
-        return 1;
-      } else if (aDate > bDate) {
-        return -1
-      } else {
-        return 0
-      }
-    });
-
-    return newArray.slice(0, 7);
   }
 
   onAddNew (topic: Topic) {
