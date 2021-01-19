@@ -11,6 +11,10 @@ export const store = {
 
   loadDataFromDb () {
     db.topics.toArray().then(allTopics => {
+      for (const topic of allTopics) {
+        topic.commands = JSON.parse(topic.commandsJson ?? '[]');
+      }
+
       store.state.topics = allTopics;
     });
 
@@ -28,12 +32,18 @@ export const store = {
   addTopic (data: Partial<Topic>) {
     const realTopic: Topic = Object.assign({}, INITIAL_TOPIC_OBJECT, data);
 
+    const commands = realTopic.commands;
+    realTopic.commandsJson = JSON.stringify(realTopic.commands);
+    delete realTopic.commands;
+
     this.importTagsAndUpdateTagIdList(realTopic);
 
     this.state.topics.push(realTopic);
 
     console.info('pre calling topic add');
     db.topics.add(realTopic);
+
+    realTopic.commands = commands;
   },
 
   deleteTopic (data: Topic) {
@@ -50,6 +60,10 @@ export const store = {
 
     const realTopic: Topic = Object.assign({}, topic);
 
+    const commands = realTopic.commands;
+    realTopic.commandsJson = JSON.stringify(realTopic.commands);
+    delete realTopic.commands;
+
     this.importTagsAndUpdateTagIdList(realTopic);
 
     if (indexOfTopic !== -1) {
@@ -60,6 +74,8 @@ export const store = {
 
     console.info('pre calling topic update');
     db.topics.update(topic.id!, realTopic);
+
+    realTopic.commands = commands;
   },
 
   addHistoryEntry (entry: HistoryEntry) {

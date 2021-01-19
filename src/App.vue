@@ -12,51 +12,42 @@
             <i class="nes-octocat" :class="startAnimate ? 'animate' : ''"></i>
           </a>
 
-  <button @click="getToken()" class="nes-btn is-success" v-if="!loggedIn">Twitch Auth</button>
-
   <div class="flex-holder">
     <div class="column">
-      <div class="scrolling-holder nes-container is-rounded is-dark with-title">
-        <p class="title">Stream Topics
-          <button type="button" class="nes-btn is-primary" @click="showNewForm = !showNewForm">Add new topic</button>
-          <button type="button" class="nes-btn is-primary" @click="showHistory = !showHistory">Toggle History</button>
-        </p>
+      <div class="scrolling-holder ">
+        <div class="nes-container is-rounded is-dark with-title">
+          <p class="title">Stream Topics</p>
 
+          <div>
+          <button type="button" class="nes-btn is-primary" @click="showNewForm = !showNewForm">
+            Add new topic
+          </button>
+          <button type="button" class="nes-btn is-primary" @click="showHistory = !showHistory">
+            Toggle History
+          </button>
+
+            <button type="button" class="nes-btn is-primary" @click="showOptions = !showOptions">
+              Toggle Options
+            </button>
+
+          <button @click="getToken()" class="nes-btn is-success" v-if="!loggedIn">Twitch Auth</button>
+          </div>
+        </div>
         <div class="scrolling-content">
 
-          <div v-for="(topic, index) of state.topics" :key="topic.id">
-            <hr v-if="index !== 0">
-            <h4> {{ topic.title }}  [{{topic.currentCounter}}]
-              <button type="button" class="nes-btn is-warning" @click="showEditForm(topic)">Edit</button>
-              <button type="button" class="nes-btn is-error" @click="deleteTopic(topic)">X</button>
-            </h4>
-            <h5>
-              {{ generateTitle(topic) }} <br/>
-            </h5>
-
-            <br>
-            Game: {{topic.gameName ?? 'Need to "Import from Twitch"'}} <br />
-            Tags:
-            <span v-if="topic.tags">
-              <span class="nes-badge"
-                    v-for="tagName of topic.tags?.split(',').map(id => state.tags[id]?.name)"
-                    :key="tagName"
-              >
-                <span class="is-primary">{{tagName}}</span>
-              </span>
-            </span>
-              <span v-if="!topic.tags">
-                Need to "Import from Twitch"
-              </span>
-
-            <br>
-            <br>
-
-            <button type="button" class="nes-btn is-warning" @click="increaseCounter(topic)">Increase Counter</button>
-            <button type="button"
-                    class="nes-btn"
-                    :class="{'is-success': loggedIn, 'is-disabled': !loggedIn}"
-                    @click="setupTwitch(topic)">Set Twitch Title & Tags</button>
+          <div v-for="(topic) of state.topics" :key="topic.id">
+            <div class="nes-container is-rounded is-dark">
+              <div>
+            <topic-entry :topic="topic"
+                         :loggedIn="loggedIn"
+                         @show-edit-form="showEditForm($event)"
+                         @delete-topic="deleteTopic($event)"
+                         @increase-counter="increaseCounter($event)"
+                         @setup-twitch="setupTwitch($event)"
+                        >
+            </topic-entry>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -92,11 +83,16 @@
 
         <p class="title">Changed history:</p>
         <closable-panel @cancel="showHistory = false">
-          <div v-for="(entry, index) of sortedHistory" :key="entry.id">
-            <hr v-if="index !== 0">
-            <h4> {{ entry.task }}</h4>
-            {{new Date(entry.date).toLocaleString()}}
-          </div>
+          <history-list></history-list>
+        </closable-panel>
+      </div>
+
+      <div class="nes-container is-rounded is-dark with-title"
+           v-if="showOptions">
+
+        <p class="title">Options:</p>
+        <closable-panel @cancel="showOptions = false">
+          <options-vue @cancel="showOptions = false"></options-vue>
         </closable-panel>
       </div>
     </div>
@@ -113,13 +109,25 @@ import ClosablePanel from '@/components/ClosablePanel.vue';
 import { Topic } from '@/types';
 import { generateTitle } from '@/utils';
 import { clientId, twitch } from '@/twitch-instance';
+import TopicEntry from '@/components/TopicEntry.vue';
+import HistoryList from '@/components/HistoryList.vue';
+import OptionsVue from '@/components/Options.vue';
 
 // TODO extract handler / instance
+
+function wait (ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+export const hashParams = new URLSearchParams(location.hash?.replace('#', ''));
 
 @Options({
   components: {
     TopicForm,
-    ClosablePanel
+    ClosablePanel,
+    TopicEntry,
+    HistoryList,
+    OptionsVue
   }
 })
 export default class App extends Vue {
@@ -127,10 +135,11 @@ export default class App extends Vue {
 
   startAnimate = false;
 
-  authRedirectMode = new URLSearchParams(location.hash?.replace('#', '')).has('id_token');
+  authRedirectMode = hashParams.has('id_token');
 
   loggedIn = true;
   showHistory = false;
+  showOptions = false;
   showNewForm = false;
   formForTopic?: Topic|null = reactive<any>(null);
 
@@ -146,25 +155,6 @@ export default class App extends Vue {
     } else {
       this.loggedIn = false;
     }
-  }
-
-  get sortedHistory () {
-    const newArray = [...this.state.history];
-
-    newArray.sort((a, b) => {
-      const aDate = Date.parse(a.date!.toString());
-      const bDate = Date.parse(b.date!.toString());
-
-      if (aDate < bDate) {
-        return 1;
-      } else if (aDate > bDate) {
-        return -1
-      } else {
-        return 0
-      }
-    });
-
-    return newArray.slice(0, 7);
   }
 
   onAddNew (topic: Topic) {
@@ -198,24 +188,24 @@ export default class App extends Vue {
     console.info('Push title to Twitch: ', { ...topic });
   }
 
-  generateTitle (topic: Topic) {
-    return generateTitle(topic);
-  }
-
-  setupTwitch (topic: Topic) {
+  async setupTwitch (topic: Topic) {
     store.addHistoryEntry({
-      task: `Applied ${topic.title}: ${topic.currentCounter}`
+      task: `Applied ${topic.title}: ${topic.currentCounter}`,
+      lastTitle: generateTitle(topic),
+      topicId: topic.id ?? -1,
+      lastCounter: topic.currentCounter
     });
 
-    twitch.applyTopicToTwitch(topic);
-  }
+    await twitch.applyTopicToTwitch(topic);
 
-  getStream () {
-    twitch.currentChannelInformation();
+    for (const command of topic.commands) {
+      await twitch.writeToChat(command);
+      await wait(1000);
+    }
   }
 
   async getToken () {
-    const {userId} = await twitch.login();
+    const { userId } = await twitch.login();
     if (userId) {
       this.loggedIn = true;
     }
@@ -250,12 +240,14 @@ export default class App extends Vue {
 }
 
 .scrolling-holder {
-  max-height: calc(100vh - 8px);
+  max-height: calc(100vh);
   height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .scrolling-content {
-  height: calc(100% - 2rem - 8px);
+  flex: 1;
   overflow-y: auto;
 }
 

@@ -1,25 +1,34 @@
-import { Topic } from '@/types';
-import { generateTitle } from '@/utils';
+import {
+  ITwitchApiHandler,
+  Topic,
+  TwitchChannelInformation, TwitchChannelTag, TwitchLoginExistsPayload,
+  TwitchLoginPayload,
+  Command
+} from '@/types';
+import { generateCommandText, generateTitle } from '@/utils';
 import jwtDecode from 'jwt-decode';
+import * as tmi from 'tmi.js';
 
-export class TwitchApiHandler {
+export class TwitchApiHandler implements ITwitchApiHandler {
   twitchAuthUrl = `https://id.twitch.tv/oauth2/authorize?response_type=token%20id_token&client_id=${this.clientId}&redirect_uri=${encodeURIComponent(this.redirectUrl)}&scope=${this.scopes}+openid`;
 
+  private tmi: tmi.Client | null = null;
+
   constructor (private clientId: string,
-               private scopes: string,
-               private redirectUrl: string) {
+              private scopes: string,
+              private redirectUrl: string) {
     // todo
   }
 
   // todo type
-  async login (): Promise<any> {
+  async login (): Promise<TwitchLoginPayload> {
     return new Promise((resolve, reject) => {
-      const userId = localStorage.getItem('userId');
+      const userId = localStorage.getItem('userId') ?? '';
 
       if (userId) {
-        const userName = localStorage.getItem('userName');
-        const tokenId = localStorage.getItem('tokenId');
-        const accessToken = localStorage.getItem('accessToken');
+        const userName = localStorage.getItem('userName') ?? '';
+        const tokenId = localStorage.getItem('tokenId') ?? '';
+        const accessToken = localStorage.getItem('accessToken') ?? '';
 
         resolve({
           userId, userName, tokenId, accessToken
@@ -43,7 +52,7 @@ export class TwitchApiHandler {
     });
   }
 
-  async loginExists () {
+  async loginExists (): Promise<TwitchLoginExistsPayload | null> {
     const accessToken = localStorage.getItem('accessToken');
 
     if (!accessToken) {
@@ -87,7 +96,7 @@ export class TwitchApiHandler {
   }
 
   // GET https://api.twitch.tv/helix/channels
-  currentChannelInformation () {
+  currentChannelInformation (): Promise<TwitchChannelInformation> {
     return fetch('https://api.twitch.tv/helix/channels?broadcaster_id=' + localStorage.getItem('userId'), {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
@@ -102,7 +111,7 @@ export class TwitchApiHandler {
   }
 
   // GET https://api.twitch.tv/helix/streams/tags
-  currentTags () {
+  currentTags (): Promise<TwitchChannelTag[]> {
     return fetch('https://api.twitch.tv/helix/streams/tags?broadcaster_id=' + localStorage.getItem('userId'), {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
@@ -152,5 +161,26 @@ export class TwitchApiHandler {
       newTagsPayload,
       channelInformationPayload
     });
+  }
+
+  async writeToChat (command: Command): Promise<void> {
+    const userName = localStorage.getItem('userName') ?? '';
+
+    if (this.tmi === null) {
+      this.tmi = tmi.Client({
+        identity: {
+          username: userName,
+          password: `oauth:${localStorage.getItem('accessToken')}`
+        },
+        connection: {
+          secure: true,
+          reconnect: true
+        }
+      });
+      const result = await this.tmi.connect();
+      console.info({ result, userName });
+    }
+
+    await this.tmi.say(userName, generateCommandText(command));
   }
 }
