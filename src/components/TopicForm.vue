@@ -176,8 +176,8 @@ export default defineComponent({
       console.info({ channelInfo, tags });
 
       const importedTags = tags
-        .filter((t: any) => !t.is_auto)
-        .map((t: any) => ({
+        .filter((t) => !t.is_auto)
+        .map((t) => ({
           id: t.tag_id,
           name: t.localization_names['en-us']
         }) as TagData);

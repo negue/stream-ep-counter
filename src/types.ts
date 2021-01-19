@@ -18,7 +18,10 @@ export interface Topic {
 
 export interface HistoryEntry {
   id?: number;
-  date?: Date | null;
+  date?: Date | string | null;
+  topicId: number;
+  lastCounter: number;
+  lastTitle: string;
   task: string;
 }
 
@@ -40,5 +43,44 @@ export const INITIAL_TOPIC_OBJECT: Topic = {
 }
 
 export const INITIAL_HISTORY_OBJECT: HistoryEntry = {
-  task: ''
+  task: '',
+  lastCounter: 0,
+  topicId: -1,
+  lastTitle: ''
+}
+
+export interface TwitchChannelInformation {
+  game_name: string;
+  game_id: string;
+  title: string;
+
+}
+
+export interface TwitchChannelTag {
+  localization_names: {[key: string]: string};
+  tag_id: string;
+  is_auto: boolean;
+
+}
+
+export interface TwitchLoginExistsPayload {
+  preferred_username: string;
+
+}
+
+export interface TwitchLoginPayload {
+  userId: string;
+  userName: string;
+  tokenId: string;
+  accessToken: string;
+}
+
+// eslint-disable-next-line @typescript-eslint/interface-name-prefix
+export interface ITwitchApiHandler {
+  login (): Promise<TwitchLoginPayload>;
+  loginExists (): Promise<TwitchLoginExistsPayload | null>;
+  checkTokens (): void;
+  currentChannelInformation (): Promise<TwitchChannelInformation>;
+  currentTags (): Promise<TwitchChannelTag[]>;
+  applyTopicToTwitch (topic: Topic): void;
 }

@@ -104,6 +104,8 @@ import TopicEntry from '@/components/TopicEntry.vue';
 
 // TODO extract handler / instance
 
+export const hashParams = new URLSearchParams(location.hash?.replace('#', ''));
+
 @Options({
   components: {
     TopicForm,
@@ -116,7 +118,7 @@ export default class App extends Vue {
 
   startAnimate = false;
 
-  authRedirectMode = new URLSearchParams(location.hash?.replace('#', '')).has('id_token');
+  authRedirectMode = hashParams.has('id_token');
 
   loggedIn = true;
   showHistory = false;
@@ -189,14 +191,13 @@ export default class App extends Vue {
 
   setupTwitch (topic: Topic) {
     store.addHistoryEntry({
-      task: `Applied ${topic.title}: ${topic.currentCounter}`
+      task: `Applied ${topic.title}: ${topic.currentCounter}`,
+      lastTitle: generateTitle(topic),
+      topicId: topic.id ?? -1,
+      lastCounter: topic.currentCounter
     });
 
     twitch.applyTopicToTwitch(topic);
-  }
-
-  getStream () {
-    twitch.currentChannelInformation();
   }
 
   async getToken () {

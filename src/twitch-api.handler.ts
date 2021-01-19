@@ -1,8 +1,13 @@
-import { Topic } from '@/types';
+import {
+  ITwitchApiHandler,
+  Topic,
+  TwitchChannelInformation, TwitchChannelTag, TwitchLoginExistsPayload,
+  TwitchLoginPayload
+} from '@/types';
 import { generateTitle } from '@/utils';
 import jwtDecode from 'jwt-decode';
 
-export class TwitchApiHandler {
+export class TwitchApiHandler implements ITwitchApiHandler {
   twitchAuthUrl = `https://id.twitch.tv/oauth2/authorize?response_type=token%20id_token&client_id=${this.clientId}&redirect_uri=${encodeURIComponent(this.redirectUrl)}&scope=${this.scopes}+openid`;
 
   constructor (private clientId: string,
@@ -12,14 +17,14 @@ export class TwitchApiHandler {
   }
 
   // todo type
-  async login (): Promise<any> {
+  async login (): Promise<TwitchLoginPayload> {
     return new Promise((resolve, reject) => {
-      const userId = localStorage.getItem('userId');
+      const userId = localStorage.getItem('userId') ?? '';
 
       if (userId) {
-        const userName = localStorage.getItem('userName');
-        const tokenId = localStorage.getItem('tokenId');
-        const accessToken = localStorage.getItem('accessToken');
+        const userName = localStorage.getItem('userName') ?? '';
+        const tokenId = localStorage.getItem('tokenId') ?? '';
+        const accessToken = localStorage.getItem('accessToken') ?? '';
 
         resolve({
           userId, userName, tokenId, accessToken
@@ -43,7 +48,7 @@ export class TwitchApiHandler {
     });
   }
 
-  async loginExists () {
+  async loginExists (): Promise<TwitchLoginExistsPayload | null> {
     const accessToken = localStorage.getItem('accessToken');
 
     if (!accessToken) {
@@ -87,7 +92,7 @@ export class TwitchApiHandler {
   }
 
   // GET https://api.twitch.tv/helix/channels
-  currentChannelInformation () {
+  currentChannelInformation (): Promise<TwitchChannelInformation> {
     return fetch('https://api.twitch.tv/helix/channels?broadcaster_id=' + localStorage.getItem('userId'), {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
@@ -102,7 +107,7 @@ export class TwitchApiHandler {
   }
 
   // GET https://api.twitch.tv/helix/streams/tags
-  currentTags () {
+  currentTags (): Promise<TwitchChannelTag[]> {
     return fetch('https://api.twitch.tv/helix/streams/tags?broadcaster_id=' + localStorage.getItem('userId'), {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
