@@ -45,7 +45,7 @@ export class TwitchApiOfflineHandler implements ITwitchApiHandler {
     alert('Stuff will be applied to Twitch');
   }
 
-  writeToChat (command: Command): void {
+  async writeToChat (command: Command): Promise<void> {
     alert('Writing to chat that!' + generateCommandText(command));
   }
 }

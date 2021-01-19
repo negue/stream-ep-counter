@@ -199,7 +199,7 @@ export default class App extends Vue {
     await twitch.applyTopicToTwitch(topic);
 
     for (const command of topic.commands) {
-      twitch.writeToChat(command);
+      await twitch.writeToChat(command);
       await wait(1000);
     }
   }

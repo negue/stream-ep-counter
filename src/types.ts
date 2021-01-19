@@ -101,5 +101,5 @@ export interface ITwitchApiHandler {
   currentChannelInformation (): Promise<TwitchChannelInformation>;
   currentTags (): Promise<TwitchChannelTag[]>;
   applyTopicToTwitch (topic: Topic): void;
-  writeToChat(command: Command): void;
+  writeToChat(command: Command): Promise<void>;
 }

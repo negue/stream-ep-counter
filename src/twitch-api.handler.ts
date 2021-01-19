@@ -5,11 +5,14 @@ import {
   TwitchLoginPayload,
   Command
 } from '@/types';
-import { generateTitle } from '@/utils';
+import { generateCommandText, generateTitle } from '@/utils';
 import jwtDecode from 'jwt-decode';
+import * as tmi from 'tmi.js';
 
 export class TwitchApiHandler implements ITwitchApiHandler {
   twitchAuthUrl = `https://id.twitch.tv/oauth2/authorize?response_type=token%20id_token&client_id=${this.clientId}&redirect_uri=${encodeURIComponent(this.redirectUrl)}&scope=${this.scopes}+openid`;
+
+  private tmi: tmi.Client | null = null;
 
   constructor (private clientId: string,
               private scopes: string,
@@ -160,7 +163,24 @@ export class TwitchApiHandler implements ITwitchApiHandler {
     });
   }
 
-  writeToChat (command: Command): void {
-    throw new Error('Method not implemented.');
+  async writeToChat (command: Command): Promise<void> {
+    const userName = localStorage.getItem('userName') ?? '';
+
+    if (this.tmi === null) {
+      this.tmi = tmi.Client({
+        identity: {
+          username: userName,
+          password: `oauth:${localStorage.getItem('accessToken')}`
+        },
+        connection: {
+          secure: true,
+          reconnect: true
+        }
+      });
+      const result = await this.tmi.connect();
+      console.info({ result, userName });
+    }
+
+    await this.tmi.say(userName, generateCommandText(command));
   }
 }
