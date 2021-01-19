@@ -26,6 +26,10 @@
             Toggle History
           </button>
 
+            <button type="button" class="nes-btn is-primary" @click="showOptions = !showOptions">
+              Toggle Options
+            </button>
+
           <button @click="getToken()" class="nes-btn is-success" v-if="!loggedIn">Twitch Auth</button>
           </div>
         </div>
@@ -82,6 +86,15 @@
           <history-list></history-list>
         </closable-panel>
       </div>
+
+      <div class="nes-container is-rounded is-dark with-title"
+           v-if="showOptions">
+
+        <p class="title">Options:</p>
+        <closable-panel @cancel="showOptions = false">
+          <options-vue @cancel="showOptions = false"></options-vue>
+        </closable-panel>
+      </div>
     </div>
   </div>
 </div>
@@ -98,8 +111,13 @@ import { generateTitle } from '@/utils';
 import { clientId, twitch } from '@/twitch-instance';
 import TopicEntry from '@/components/TopicEntry.vue';
 import HistoryList from '@/components/HistoryList.vue';
+import OptionsVue from '@/components/Options.vue';
 
 // TODO extract handler / instance
+
+function wait (ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 export const hashParams = new URLSearchParams(location.hash?.replace('#', ''));
 
@@ -108,7 +126,8 @@ export const hashParams = new URLSearchParams(location.hash?.replace('#', ''));
     TopicForm,
     ClosablePanel,
     TopicEntry,
-    HistoryList
+    HistoryList,
+    OptionsVue
   }
 })
 export default class App extends Vue {
@@ -120,6 +139,7 @@ export default class App extends Vue {
 
   loggedIn = true;
   showHistory = false;
+  showOptions = false;
   showNewForm = false;
   formForTopic?: Topic|null = reactive<any>(null);
 
@@ -168,7 +188,7 @@ export default class App extends Vue {
     console.info('Push title to Twitch: ', { ...topic });
   }
 
-  setupTwitch (topic: Topic) {
+  async setupTwitch (topic: Topic) {
     store.addHistoryEntry({
       task: `Applied ${topic.title}: ${topic.currentCounter}`,
       lastTitle: generateTitle(topic),
@@ -176,7 +196,12 @@ export default class App extends Vue {
       lastCounter: topic.currentCounter
     });
 
-    twitch.applyTopicToTwitch(topic);
+    await twitch.applyTopicToTwitch(topic);
+
+    for (const command of topic.commands) {
+      twitch.writeToChat(command);
+      await wait(1000);
+    }
   }
 
   async getToken () {

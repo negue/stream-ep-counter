@@ -2,7 +2,8 @@ import {
   ITwitchApiHandler,
   Topic,
   TwitchChannelInformation, TwitchChannelTag, TwitchLoginExistsPayload,
-  TwitchLoginPayload
+  TwitchLoginPayload,
+  Command
 } from '@/types';
 import { generateTitle } from '@/utils';
 import jwtDecode from 'jwt-decode';
@@ -11,8 +12,8 @@ export class TwitchApiHandler implements ITwitchApiHandler {
   twitchAuthUrl = `https://id.twitch.tv/oauth2/authorize?response_type=token%20id_token&client_id=${this.clientId}&redirect_uri=${encodeURIComponent(this.redirectUrl)}&scope=${this.scopes}+openid`;
 
   constructor (private clientId: string,
-               private scopes: string,
-               private redirectUrl: string) {
+              private scopes: string,
+              private redirectUrl: string) {
     // todo
   }
 
@@ -157,5 +158,9 @@ export class TwitchApiHandler implements ITwitchApiHandler {
       newTagsPayload,
       channelInformationPayload
     });
+  }
+
+  writeToChat (command: Command): void {
+    throw new Error('Method not implemented.');
   }
 }

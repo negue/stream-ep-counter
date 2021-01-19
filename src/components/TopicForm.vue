@@ -59,7 +59,30 @@
       </tags-input>
     </div>
 
-<br>
+    <div class="nes-field">
+      <label>
+        Commands
+
+        <button type="button" class="nes-btn" @click="addCommand()">Add new command</button>
+      </label>
+
+      <div v-for="(command, index) of workingTopic.commands"
+           :key="index"
+      class="command_item">
+        <input type="text" class="nes-input"
+               autocomplete="off"
+               v-model="command.name">
+
+        <button type="button" class="nes-btn is-error" @click="removeCommand(index)">X</button>
+        <br/>
+
+        <textarea class="nes-textarea"
+                  v-model="command.content"></textarea>
+
+      </div>
+    </div>
+
+    <br>
     <div v-if="workingTopic.gameName || workingTopic.tags">
       <br>
       Game: {{workingTopic.gameName}} <br />
@@ -215,6 +238,15 @@ export default defineComponent({
     },
     updateTagsToTopic () {
       this.workingTopic.tags = this.currentTags.map(t => t.id).join(',');
+    },
+    addCommand () {
+      this.workingTopic.commands.push({
+        name: 'New Command',
+        content: ''
+      });
+    },
+    removeCommand (index: number) {
+      this.workingTopic.commands.splice(index, 1);
     }
   },
   watch: {
@@ -245,6 +277,25 @@ export default defineComponent({
 
 .nes-textarea {
   min-height: 10rem;
+}
+
+.command_item {
+  padding: 0.25rem;
+  margin-bottom: 1rem;
+
+  outline: 0.25rem dashed gray;
+
+  input {
+    display: inline-block;
+    width: calc(100% - 5rem);
+  }
+  .nes-btn {
+    margin-left: 1rem;
+  }
+  &:hover {
+    background: gray;
+    outline: none;
+  }
 }
 </style>
 

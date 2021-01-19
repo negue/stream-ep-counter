@@ -1,7 +1,21 @@
 
+export const COMMAND_SYNTAX_NAME = '{name}';
+export const COMMAND_SYNTAX_CONTENT = '{content}';
+export const CONFIG_COMMAND_SYNTAX = 'commandSyntax';
+
+export const CONFIG_STATE = {
+  [CONFIG_COMMAND_SYNTAX]: localStorage.getItem(CONFIG_COMMAND_SYNTAX) ??
+    `!editcommand ${COMMAND_SYNTAX_NAME} ${COMMAND_SYNTAX_CONTENT}`
+};
+
 export interface TagData {
   id: string;
   name: string;
+}
+
+export interface Command {
+  name: string;
+  content: string;
 }
 
 export interface Topic {
@@ -14,6 +28,8 @@ export interface Topic {
   tags: string;
 
   importTags?: TagData[];
+  commandsJson: string;
+  commands: Command[]; // will be saved as json
 }
 
 export interface HistoryEntry {
@@ -39,7 +55,9 @@ export const INITIAL_TOPIC_OBJECT: Topic = {
   currentCounter: 1,
   title: '',
   template: '',
-  tags: ''
+  tags: '',
+  commands: [],
+  commandsJson: '[]'
 }
 
 export const INITIAL_HISTORY_OBJECT: HistoryEntry = {
@@ -83,4 +101,5 @@ export interface ITwitchApiHandler {
   currentChannelInformation (): Promise<TwitchChannelInformation>;
   currentTags (): Promise<TwitchChannelTag[]>;
   applyTopicToTwitch (topic: Topic): void;
+  writeToChat(command: Command): void;
 }

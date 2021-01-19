@@ -1,10 +1,12 @@
 import {
+  Command,
   ITwitchApiHandler,
   Topic,
   TwitchChannelInformation,
   TwitchChannelTag, TwitchLoginExistsPayload,
   TwitchLoginPayload
 } from '@/types';
+import { generateCommandText } from '@/utils';
 
 export class TwitchApiOfflineHandler implements ITwitchApiHandler {
   async login (): Promise<TwitchLoginPayload> {
@@ -41,5 +43,9 @@ export class TwitchApiOfflineHandler implements ITwitchApiHandler {
 
   async applyTopicToTwitch (topic: Topic) {
     alert('Stuff will be applied to Twitch');
+  }
+
+  writeToChat (command: Command): void {
+    alert('Writing to chat that!' + generateCommandText(command));
   }
 }
