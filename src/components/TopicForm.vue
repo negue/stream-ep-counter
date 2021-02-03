@@ -10,6 +10,19 @@
     </div>
 
     <div class="nes-field">
+      <label>
+        <input type="checkbox" class="nes-checkbox is-dark" v-model="customChannel" />
+        <span>Custom Channel</span>
+      </label>
+       <input type="text" class="nes-input" v-if="customChannel"
+         :class="{'is-error': customChannel && !workingTopic.customChannel, 'is-disabled': !customChannel }"
+         :required="!workingTopic.customChannel"
+              :disabled="!customChannel"
+         autocomplete="off"
+         v-model="workingTopic.customChannel">
+    </div>
+
+    <div class="nes-field">
       <label for="counter_field">Counter</label>
       <input type="number" id="counter_field" class="nes-input"
              autocomplete="off"
@@ -128,7 +141,8 @@ export default defineComponent({
       workingTopic: { ...this.topic } as Topic,
       counterPlaceholder: '{{counter}}',
       currentTags: [] as TagData[],
-      state: store.state
+      state: store.state,
+      customChannel: !!this.topic?.customChannel
     }
   },
   computed: {

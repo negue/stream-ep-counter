@@ -20,7 +20,9 @@ export class TwitchApiOfflineHandler implements ITwitchApiHandler {
 
   async loginExists (): Promise<TwitchLoginExistsPayload | null> {
     return {
-      preferred_username: 'offfline'
+      preferred_username: 'offfline',
+      message: '',
+      status: 200
     };
   }
 
@@ -47,5 +49,9 @@ export class TwitchApiOfflineHandler implements ITwitchApiHandler {
 
   async writeToChat (command: Command): Promise<void> {
     alert('Writing to chat that!' + generateCommandText(command));
+  }
+
+  resetAuth (): void {
+    alert();
   }
 }

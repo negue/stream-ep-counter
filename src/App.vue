@@ -30,7 +30,12 @@
               Toggle Options
             </button>
 
-          <button @click="getToken()" class="nes-btn is-success" v-if="!loggedIn">Twitch Auth</button>
+          <button @click="getToken()"
+                  class="nes-btn is-success"
+                  v-if="!loggedIn">Twitch Auth</button>
+          <button @click="logout()"
+                  class="nes-btn is-error"
+                  v-if="loggedIn">Logout: {{userName}}</button>
           </div>
         </div>
         <div class="scrolling-content">
@@ -108,7 +113,7 @@ import { reactive } from 'vue';
 import ClosablePanel from '@/components/ClosablePanel.vue';
 import { Topic } from '@/types';
 import { generateTitle } from '@/utils';
-import { clientId, twitch } from '@/twitch-instance';
+import { twitch } from '@/twitch-instance';
 import TopicEntry from '@/components/TopicEntry.vue';
 import HistoryList from '@/components/HistoryList.vue';
 import OptionsVue from '@/components/Options.vue';
@@ -137,7 +142,8 @@ export default class App extends Vue {
 
   authRedirectMode = hashParams.has('id_token');
 
-  loggedIn = true;
+  loggedIn = false;
+  userName = '';
   showHistory = false;
   showOptions = false;
   showNewForm = false;
@@ -150,8 +156,16 @@ export default class App extends Vue {
 
     const loginResult = await twitch.loginExists();
 
+    console.info({ loginResult });
     if (loginResult) {
       this.loggedIn = !!loginResult?.preferred_username;
+      if (!this.loggedIn) {
+        this.loggedIn = false;
+        twitch.resetAuth();
+        return;
+      }
+
+      this.userName = loginResult.preferred_username;
     } else {
       this.loggedIn = false;
     }
@@ -205,10 +219,17 @@ export default class App extends Vue {
   }
 
   async getToken () {
-    const { userId } = await twitch.login();
+    const { userId, userName } = await twitch.login();
     if (userId) {
       this.loggedIn = true;
+      this.userName = userName;
     }
+  }
+
+  logout () {
+    twitch.resetAuth();
+    this.loggedIn = false;
+    this.userName = '';
   }
 }
 </script>

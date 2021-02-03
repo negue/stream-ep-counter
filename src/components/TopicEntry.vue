@@ -2,6 +2,8 @@
   <h4> {{ topic.title }}  [{{topic.currentCounter}}]
     <button type="button" class="nes-btn is-warning" @click="$emit('show-edit-form', topic)">Edit</button>
     <button type="button" class="nes-btn is-error" @click="$emit('delete-topic', topic)">X</button>
+
+    <span v-if="topic.customChannel"> @{{topic.customChannel}}</span>
   </h4>
   <h5>
     <span class="nes-text is-warning">{{ generateTitle(topic).slice(0, 32) }}</span>{{ generateTitle(topic).slice(32) }} <br/>

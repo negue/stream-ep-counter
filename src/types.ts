@@ -22,6 +22,7 @@ export interface Topic {
   id?: number;
   currentCounter: number;
   title: string;
+  customChannel: string;
   template: string;
   gameId?: string;
   gameName?: string;
@@ -57,7 +58,8 @@ export const INITIAL_TOPIC_OBJECT: Topic = {
   template: '',
   tags: '',
   commands: [],
-  commandsJson: '[]'
+  commandsJson: '[]',
+  customChannel: ''
 }
 
 export const INITIAL_HISTORY_OBJECT: HistoryEntry = {
@@ -83,7 +85,8 @@ export interface TwitchChannelTag {
 
 export interface TwitchLoginExistsPayload {
   preferred_username: string;
-
+  message: string;
+  status: number;
 }
 
 export interface TwitchLoginPayload {
@@ -102,4 +105,5 @@ export interface ITwitchApiHandler {
   currentTags (): Promise<TwitchChannelTag[]>;
   applyTopicToTwitch (topic: Topic): void;
   writeToChat(command: Command): Promise<void>;
+  resetAuth (): void;
 }
