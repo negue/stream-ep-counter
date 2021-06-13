@@ -15,14 +15,13 @@ const LS_TOKEN_ID = 'tokenId';
 const LS_ACCESS_TOKEN = 'accessToken';
 
 export class TwitchApiHandler implements ITwitchApiHandler {
-  twitchAuthUrl = `https://id.twitch.tv/oauth2/authorize?response_type=token%20id_token&client_id=${this.clientId}&redirect_uri=${encodeURIComponent(this.redirectUrl)}&scope=${this.scopes}+openid`;
-
+  private twitchAuthUrl: string;
   private tmi: tmi.Client | null = null;
 
   constructor (private clientId: string,
               private scopes: string,
               private redirectUrl: string) {
-    // todo
+    this.twitchAuthUrl = `https://id.twitch.tv/oauth2/authorize?response_type=token%20id_token&client_id=${this.clientId}&redirect_uri=${encodeURIComponent(this.redirectUrl)}&scope=${this.scopes}+openid`;
   }
 
   // todo type
