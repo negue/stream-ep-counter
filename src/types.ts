@@ -32,6 +32,8 @@ export interface Topic {
   importTags?: TagData[];
   commandsJson: string;
   commands: Command[]; // will be saved as json
+
+  archived: boolean;
 }
 
 export interface HistoryEntry {
@@ -62,7 +64,9 @@ export const INITIAL_TOPIC_OBJECT: Topic = {
   tags: '',
   commands: [],
   commandsJson: '[]',
-  customChannel: ''
+  customChannel: '',
+
+  archived: false
 }
 
 export const INITIAL_HISTORY_OBJECT: HistoryEntry = {

@@ -132,6 +132,10 @@
   </scrolling-content>
 
   <br/>
+
+  <button v-if="!!workingTopic.id" type="button" class="nes-btn is-error"
+          @click="archiveTopic()">Archive</button>
+
   <button type="button" class="nes-btn is-error" @click="cancel()">Cancel</button>
   <button type="button" class="nes-btn" @click="save()">Save</button>
 
@@ -309,6 +313,10 @@ export default defineComponent({
     },
     removeCommand (index: number) {
       this.workingTopic.commands.splice(index, 1);
+    },
+    archiveTopic () {
+      this.workingTopic.archived = true;
+      this.save();
     }
   },
   watch: {

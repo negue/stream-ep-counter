@@ -14,8 +14,8 @@ export class DexieDatabase extends Dexie {
     //
     // Define tables and indexes
     //
-    db.version(6).stores({
-      topics: '++id, currentCounter, title, notificationText, template, gameId, gameName, tags, commandsJson',
+    db.version(7).stores({
+      topics: '++id, currentCounter, title, notificationText, template, gameId, gameName, tags, commandsJson, archived',
       history: '++id, date, task',
       tags: 'id, name'
     });

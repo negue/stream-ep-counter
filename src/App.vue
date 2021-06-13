@@ -40,7 +40,7 @@
         </div>
         <scrolling-content class="scrolling-content-outer">
           <div class="scrolling-content-inner">
-            <div v-for="(topic) of state.topics" :key="topic.id" class="topic-container">
+            <div v-for="(topic) of currentTopics" :key="topic.id" class="topic-container">
             <div class="nes-container is-rounded is-dark">
               <div>
             <topic-entry :topic="topic"
@@ -54,6 +54,15 @@
               </div>
             </div>
           </div>
+
+            <div class="topic-container">
+            <span v-for="(topic) of archivedTopics" :key="topic.id" class="topic-container">
+              <button @click="unArchiveTopic(topic)"
+                      class="nes-btn is-error">
+                Unarchive: {{topic.title}} [{{topic.currentCounter}}]
+              </button>
+            </span>
+            </div>
           </div>
         </scrolling-content>
       </div>
@@ -228,6 +237,19 @@ export default class App extends Vue {
     twitch.resetAuth();
     this.loggedIn = false;
     this.userName = '';
+  }
+
+  unArchiveTopic (topic: Topic) {
+    topic.archived = false;
+    store.editTopic(topic);
+  }
+
+  get currentTopics () {
+    return this.state.topics.filter(t => !t.archived);
+  }
+
+  get archivedTopics () {
+    return this.state.topics.filter(t => t.archived);
   }
 }
 </script>
