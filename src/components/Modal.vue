@@ -1,7 +1,7 @@
 <template>
-  <vue-final-modal v-model="opened">
-    <div class="nes-dialog is-dark" v-if="opened">
-      <closable-panel @cancel="opened = false">
+  <vue-final-modal v-model="isOpened">
+    <div class="nes-dialog is-dark" v-if="isOpened">
+      <closable-panel @cancel="closeModal()">
         <slot></slot>
       </closable-panel>
     </div>
@@ -17,10 +17,24 @@ import ClosablePanel from '@/components/ClosablePanel.vue';
   components: {
     ClosablePanel
 
+  },
+
+  watch: {
+    opened (newOpenedValue) {
+      this.isOpened = newOpenedValue;
+    }
   }
 })
 export default class Modal extends Vue {
-  @Prop({ default: false }) opened!: boolean;
+  @Prop({ default: false })
+  opened!: boolean;
+
+  public isOpened = this.opened;
+
+  closeModal () {
+    this.isOpened = false;
+    this.$emit('closed', true);
+  }
 }
 </script>
 

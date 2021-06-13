@@ -1,5 +1,5 @@
 <template>
-  <div class="form-holder topic-form">
+  <div class="form-holder">
     <div class="nes-field">
       <label for="command_syntax"> Command Syntax </label>
       <input type="text" id="command_syntax" class="nes-input"

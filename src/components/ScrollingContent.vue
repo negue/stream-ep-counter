@@ -30,6 +30,8 @@ export default class ScrollingContent extends Vue {
 }
 </script>
 
-<style scoped>
-
+<style lang="scss">
+.simplebar-scrollbar::before {
+  background-color: white !important;
+}
 </style>

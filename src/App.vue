@@ -70,19 +70,6 @@
           ></topic-form>
         </closable-panel>
       </div>
-      <div class="nes-container is-rounded is-dark with-title"
-           v-if="formForTopic">
-
-        <p class="title">Edit Topic: {{formForTopic.title}}</p>
-
-        <closable-panel @cancel="formForTopic = undefined">
-          <topic-form :topic="formForTopic"
-                      @save="editTopic"
-                      @cancel="formForTopic = undefined"
-                      :loggedIn="loggedIn"
-          ></topic-form>
-        </closable-panel>
-      </div>
 
       <div class="nes-container is-rounded is-dark with-title"
            v-if="showHistory">
@@ -96,7 +83,21 @@
   </div>
 
   <modal v-model:opened="showOptions">
-    <options-vue @cancel="showOptions = false"></options-vue>
+    <options @cancel="showOptions = false"></options>
+  </modal>
+
+  <modal :opened="formForTopic != null"
+         @closed="formForTopic = undefined">
+
+    <div v-if="formForTopic">
+      <p class="title">Edit Topic: {{formForTopic.title}}</p>
+
+      <topic-form :topic="formForTopic"
+                  @save="editTopic"
+                  @cancel="formForTopic = undefined"
+                  :loggedIn="loggedIn"
+      ></topic-form>
+    </div>
   </modal>
 </div>
 </template>
@@ -131,7 +132,7 @@ export const hashParams = new URLSearchParams(location.hash?.replace('#', ''));
     ClosablePanel,
     TopicEntry,
     HistoryList,
-    OptionsVue,
+    Options: OptionsVue,
     ScrollingContent
   }
 })
