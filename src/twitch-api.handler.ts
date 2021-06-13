@@ -3,7 +3,7 @@ import {
   Topic,
   TwitchChannelInformation, TwitchChannelTag, TwitchLoginExistsPayload,
   TwitchLoginPayload,
-  Command
+  Command, TwitchPaginatedDataResult
 } from '@/types';
 import { generateCommandText, generateTitle } from '@/utils';
 import jwtDecode from 'jwt-decode';
@@ -13,6 +13,8 @@ const LS_USER_ID = 'userId';
 const LS_USER_NAME = 'userName';
 const LS_TOKEN_ID = 'tokenId';
 const LS_ACCESS_TOKEN = 'accessToken';
+
+// TODO Extract multiple fetch with headers
 
 export class TwitchApiHandler implements ITwitchApiHandler {
   private twitchAuthUrl: string;
@@ -223,6 +225,22 @@ export class TwitchApiHandler implements ITwitchApiHandler {
     }
 
     await this.tmi.say(userName, generateCommandText(command));
+  }
+
+  async listFirstTags (
+    after?: string|undefined,
+    first = 100
+  ): Promise<TwitchPaginatedDataResult<TwitchChannelTag>> {
+    const result = await fetch(`https://api.twitch.tv/helix/tags/streams?first=${first}&after=${after || ''}`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+        'client-id': this.clientId,
+        'content-type': 'application/json'
+      },
+      method: 'GET'
+    }).then(res => res.json());
+
+    return result;
   }
 
   public resetAuth () {

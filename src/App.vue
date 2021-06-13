@@ -165,6 +165,8 @@ export default class App extends Vue {
     } else {
       this.loggedIn = false;
     }
+
+    store.setLoggedIn(this.loggedIn);
   }
 
   onAddNew (topic: Topic) {

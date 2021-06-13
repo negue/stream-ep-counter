@@ -79,6 +79,7 @@
                       :typeahead="true"
                       placeholder="Select tags"
                       :typeahead-activation-threshold="0"
+                      :typeahead-max-results="10"
           >
             <template v-slot:selected-tag="{ tag, index, removeTag }">
               {{tag.name}}
@@ -142,7 +143,7 @@ import { TagData, Topic } from '@/types';
 import { store } from '@/state';
 import { twitch } from '@/twitch-instance';
 import TagsInput from '@voerro/vue-tagsinput';
-import { generateNotification, generateTitle } from '@/utils';
+import { convertTwitchTagsToTagData, generateNotification, generateTitle } from '@/utils';
 import ScrollingContent from '@/components/ScrollingContent.vue';
 
 export default defineComponent({
@@ -264,12 +265,7 @@ export default defineComponent({
 
       console.info({ channelInfo, tags });
 
-      const importedTags = tags
-        .filter((t) => !t.is_auto)
-        .map((t) => ({
-          id: t.tag_id,
-          name: t.localization_names['en-us']
-        }) as TagData);
+      const importedTags = convertTwitchTagsToTagData(tags);
 
       console.info({ tags, importedTags });
       this.workingTopic.importTags = importedTags;

@@ -51,6 +51,7 @@ export interface State {
   topics: Topic[];
   history: HistoryEntry[];
   tags: Dictionary<TagData>;
+  loggedIn: boolean;
 }
 
 export const INITIAL_TOPIC_OBJECT: Topic = {
@@ -82,7 +83,6 @@ export interface TwitchChannelTag {
   localization_names: {[key: string]: string};
   tag_id: string;
   is_auto: boolean;
-
 }
 
 export interface TwitchLoginExistsPayload {
@@ -98,6 +98,13 @@ export interface TwitchLoginPayload {
   accessToken: string;
 }
 
+export interface TwitchPaginatedDataResult<T> {
+  data: T[];
+  pagination: {
+    cursor: string;
+  };
+}
+
 // eslint-disable-next-line @typescript-eslint/interface-name-prefix
 export interface ITwitchApiHandler {
   login (): Promise<TwitchLoginPayload>;
@@ -108,4 +115,8 @@ export interface ITwitchApiHandler {
   applyTopicToTwitch (topic: Topic): void;
   writeToChat(command: Command): Promise<void>;
   resetAuth (): void;
+  listFirstTags (
+    after?: string|undefined,
+    first?: number|undefined
+  ): Promise<TwitchPaginatedDataResult<TwitchChannelTag>>;
 }

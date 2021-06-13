@@ -3,8 +3,8 @@ import {
   COMMAND_SYNTAX_CONTENT,
   COMMAND_SYNTAX_NAME,
   CONFIG_COMMAND_SYNTAX,
-  CONFIG_STATE,
-  Topic
+  CONFIG_STATE, TagData,
+  Topic, TwitchChannelTag
 } from '@/types';
 
 export function generateTitle (topic: Topic) {
@@ -29,4 +29,13 @@ export function generateCommandText (command: Command) {
     .replace(COMMAND_SYNTAX_CONTENT, command.content);
 
   return commandToSend;
+}
+
+export function convertTwitchTagsToTagData (tags: TwitchChannelTag[]) {
+  return tags
+    .filter((t) => !t.is_auto)
+    .map((t) => ({
+      id: t.tag_id,
+      name: t.localization_names['en-us']
+    }) as TagData);
 }

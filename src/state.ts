@@ -6,8 +6,13 @@ export const store = {
   state: reactive<State>({
     topics: [],
     history: [],
-    tags: {}
+    tags: {},
+    loggedIn: false
   }),
+
+  setLoggedIn (loggedIn: boolean) {
+    this.state.loggedIn = loggedIn;
+  },
 
   loadDataFromDb () {
     db.topics.toArray().then(allTopics => {
@@ -100,7 +105,9 @@ export const store = {
     }
   },
 
-  importUnknownTags (tags: TagData[]) {
+  importUnknownTags (tags: TagData[]): number {
+    let tagsImported = 0;
+
     // if tag not in the dictionary => add it
     // otherwise => ignore it
 
@@ -112,8 +119,11 @@ export const store = {
 
         console.info('PRE adding a tag', tag);
         db.tags.add(realTag);
+        tagsImported++;
       }
     }
+
+    return tagsImported;
   }
 };
 
