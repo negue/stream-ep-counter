@@ -32,8 +32,8 @@
         </div>
 
         <div class="nes-field">
-          <label for="textarea_field">Title-Template</label>
-          <textarea id="textarea_field" class="nes-textarea"
+          <label for="title_field">Title-Template</label>
+          <textarea id="title_field" class="nes-textarea"
                     v-model="workingTopic.template"></textarea>
 
           <div v-if="!workingTopic.template?.includes('{{counter}}')">
@@ -41,8 +41,8 @@
           </div>
 
           <span class="nes-text is-error" v-if="isTemplateInvalid">
-          {{ notValidExplanation }}
-        </span>
+            {{ notValidTemplateExplanation }}
+          </span>
         </div>
 
         <div class="nes-field">
@@ -51,6 +51,20 @@
           {{ generatedTitle.slice(0, 32) }}
         </span>
 
+        </div>
+
+        <div class="nes-field" v-if="false">
+          <label for="notification_field">Going-Live Notification Text</label>
+          <textarea id="notification_field" class="nes-textarea"
+                    v-model="workingTopic.notificationText"></textarea>
+
+          <span class="nes-text is-error" v-if="isNotificationInvalid">
+            {{ notValidNotificationExplanation }}
+          </span>
+
+          <span class="nes-text">
+            {{ generatedNotification }}
+          </span>
         </div>
 
         <div class="nes-field">
@@ -128,7 +142,7 @@ import { TagData, Topic } from '@/types';
 import { store } from '@/state';
 import { twitch } from '@/twitch-instance';
 import TagsInput from '@voerro/vue-tagsinput';
-import { generateTitle } from '@/utils';
+import { generateNotification, generateTitle } from '@/utils';
 import ScrollingContent from '@/components/ScrollingContent.vue';
 
 export default defineComponent({
@@ -169,10 +183,15 @@ export default defineComponent({
         ...this.workingTopic
       });
     },
-    isTemplateInvalid (): boolean {
-      return this.notValidExplanation !== '';
+    generatedNotification (): string {
+      return generateNotification({
+        ...this.workingTopic
+      });
     },
-    notValidExplanation (): string {
+    isTemplateInvalid (): boolean {
+      return this.notValidTemplateExplanation !== '';
+    },
+    notValidTemplateExplanation (): string {
       const template = this.workingTopic.template;
 
       if (!template) {
@@ -188,6 +207,30 @@ export default defineComponent({
 
       if (titleLength > 140) {
         return `A generated topic can be only 140 characters long. (Using 100 as counter) - Current Length: ${titleLength}`;
+      }
+
+      return '';
+    },
+
+    isNotificationInvalid (): boolean {
+      return this.notValidNotificationExplanation !== '';
+    },
+    notValidNotificationExplanation (): string {
+      const template = this.workingTopic.notificationText;
+
+      if (!template) {
+        return 'You need a going live notification.';
+      }
+
+      const generatedTitle = generateTitle({
+        ...this.workingTopic,
+        currentCounter: 100
+      });
+
+      const titleLength = generatedTitle.length;
+
+      if (titleLength > 140) {
+        return `A generated notification can be only 140 characters long. (Using 100 as counter) - Current Length: ${titleLength}`;
       }
 
       return '';

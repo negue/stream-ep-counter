@@ -15,6 +15,14 @@ export function generateTitle (topic: Topic) {
   return topic.template.replace(/{{counter}}/g, `${topic.currentCounter}`);
 }
 
+export function generateNotification (topic: Topic) {
+  if (!topic || !topic.notificationText) {
+    return '';
+  }
+
+  return topic.notificationText.replace(/{{counter}}/g, `${topic.currentCounter}`);
+}
+
 export function generateCommandText (command: Command) {
   const commandToSend = CONFIG_STATE[CONFIG_COMMAND_SYNTAX]
     .replace(COMMAND_SYNTAX_NAME, command.name)

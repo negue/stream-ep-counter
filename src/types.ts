@@ -24,6 +24,7 @@ export interface Topic {
   title: string;
   customChannel: string;
   template: string;
+  notificationText: string;
   gameId?: string;
   gameName?: string;
   tags: string;
@@ -56,6 +57,7 @@ export const INITIAL_TOPIC_OBJECT: Topic = {
   currentCounter: 1,
   title: '',
   template: '',
+  notificationText: '',
   tags: '',
   commands: [],
   commandsJson: '[]',
