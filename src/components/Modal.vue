@@ -32,6 +32,7 @@ export default class Modal extends Vue {
   public isOpened = this.opened;
 
   closeModal () {
+    this.$emit('update:opened', false);
     this.isOpened = false;
     this.$emit('closed', true);
   }

@@ -59,31 +59,26 @@
       </div>
     </div>
     <div class="column">
-      <div class="nes-container is-rounded is-dark with-title"
-           v-if="showNewForm">
-        <p class="title">New Topic</p>
 
-        <closable-panel @cancel="showNewForm = false">
-          <topic-form @save="onAddNew"
-                      @cancel="showNewForm = false"
-                      :loggedIn="loggedIn"
-          ></topic-form>
-        </closable-panel>
-      </div>
-
-      <div class="nes-container is-rounded is-dark with-title"
-           v-if="showHistory">
-
-        <p class="title">Changed history:</p>
-        <closable-panel @cancel="showHistory = false">
-          <history-list></history-list>
-        </closable-panel>
-      </div>
     </div>
   </div>
 
   <modal v-model:opened="showOptions">
     <options @cancel="showOptions = false"></options>
+  </modal>
+
+  <modal v-model:opened="showHistory">
+    <p class="title">Changed history:</p>
+    <history-list></history-list>
+  </modal>
+
+  <modal v-model:opened="showNewForm">
+    <p class="title">New Topic</p>
+
+    <topic-form @save="onAddNew"
+                @cancel="showNewForm = false"
+                :loggedIn="loggedIn"
+    ></topic-form>
   </modal>
 
   <modal :opened="formForTopic != null"
