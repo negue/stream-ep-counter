@@ -1,118 +1,144 @@
 <template>
-  <div class="form-holder topic-form">
-    <div class="nes-field">
-      <label for="name_field"> Topic </label>
-      <input type="text" id="name_field" class="nes-input"
-             :class="{'is-error': !workingTopic.title }"
-             :required="!workingTopic.title"
-             autocomplete="off"
-             v-model="workingTopic.title">
-    </div>
+  <scrolling-content class="topic-form-outer">
+    <div class="form-holder topic-form">
+      <div class="column">
+        <div class="nes-field">
+          <label for="name_field"> Topic </label>
+          <input type="text" id="name_field" class="nes-input"
+                 :class="{'is-error': !workingTopic.title }"
+                 :required="!workingTopic.title"
+                 autocomplete="off"
+                 v-model="workingTopic.title">
+        </div>
 
-    <div class="nes-field">
-      <label>
-        <input type="checkbox" class="nes-checkbox is-dark" v-model="customChannel" />
-        <span>Custom Channel</span>
-      </label>
-       <input type="text" class="nes-input" v-if="customChannel"
-         :class="{'is-error': customChannel && !workingTopic.customChannel, 'is-disabled': !customChannel }"
-         :required="!workingTopic.customChannel"
-              :disabled="!customChannel"
-         autocomplete="off"
-         v-model="workingTopic.customChannel">
-    </div>
+        <div class="nes-field">
+          <label>
+            <input type="checkbox" class="nes-checkbox is-dark" v-model="customChannel" />
+            <span>Custom Channel</span>
+          </label>
+          <input type="text" class="nes-input" v-if="customChannel"
+                 :class="{'is-error': customChannel && !workingTopic.customChannel, 'is-disabled': !customChannel }"
+                 :required="!workingTopic.customChannel"
+                 :disabled="!customChannel"
+                 autocomplete="off"
+                 v-model="workingTopic.customChannel">
+        </div>
 
-    <div class="nes-field">
-      <label for="counter_field">Counter</label>
-      <input type="number" id="counter_field" class="nes-input"
-             autocomplete="off"
-      v-model="workingTopic.currentCounter">
-    </div>
+        <div class="nes-field">
+          <label for="counter_field">Counter</label>
+          <input type="number" id="counter_field" class="nes-input"
+                 autocomplete="off"
+                 v-model="workingTopic.currentCounter">
+        </div>
 
-    <div class="nes-field">
-    <label for="textarea_field">Title-Template</label>
-    <textarea id="textarea_field" class="nes-textarea"
-              v-model="workingTopic.template"></textarea>
+        <div class="nes-field">
+          <label for="title_field">Title-Template</label>
+          <textarea id="title_field" class="nes-textarea"
+                    v-model="workingTopic.template"></textarea>
 
-    <div v-if="!workingTopic.template?.includes('{{counter}}')">
-      <i>You need to use <code>{{counterPlaceholder}}</code> as placeholder. </i>
-    </div>
+          <div v-if="!workingTopic.template?.includes('{{counter}}')">
+            <i>You need to use <code>{{counterPlaceholder}}</code> as placeholder. </i>
+          </div>
 
-    <span class="nes-text is-error" v-if="isTemplateInvalid">
-        {{ notValidExplanation }}
-      </span>
-    </div>
+          <span class="nes-text is-error" v-if="isTemplateInvalid">
+            {{ notValidTemplateExplanation }}
+          </span>
+        </div>
 
-    <div class="nes-field">
-      <label>In Twitch Overview</label>
-      <span class="nes-text is-warning">
-        {{ generatedTitle.slice(0, 32) }}
-      </span>
+        <div class="nes-field">
+          <label>In Twitch Overview</label>
+          <span class="nes-text is-warning">
+          {{ generatedTitle.slice(0, 32) }}
+        </span>
 
-    </div>
+        </div>
 
-    <div class="nes-field">
-      <label>Tags</label>
-      <tags-input element-id="tags" ref="tagsInput"
-                  :value="currentTags"
-                  @tags-updated="updateTags($event)"
-                  :only-existing-tags="true"
-                  id-field="id"
-                  text-field="name"
-                  :existing-tags="allTags"
-                  :typeahead="true"
-                  placeholder="Select tags"
-                  :typeahead-activation-threshold="0"
-      >
-        <template v-slot:selected-tag="{ tag, index, removeTag }">
-          {{tag.name}}
-          <span class="is-danger" @click.prevent="removeTag(index)">X</span>
+        <div class="nes-field" v-if="false">
+          <label for="notification_field">Going-Live Notification Text</label>
+          <textarea id="notification_field" class="nes-textarea"
+                    v-model="workingTopic.notificationText"></textarea>
 
-        </template>
-      </tags-input>
-    </div>
+          <span class="nes-text is-error" v-if="isNotificationInvalid">
+            {{ notValidNotificationExplanation }}
+          </span>
 
-    <div class="nes-field">
-      <label>
-        Commands
+          <span class="nes-text">
+            {{ generatedNotification }}
+          </span>
+        </div>
 
-        <button type="button" class="nes-btn" @click="addCommand()">Add new command</button>
-      </label>
+        <div class="nes-field">
+          <label>Tags</label>
+          <tags-input element-id="tags" ref="tagsInput"
+                      :value="currentTags"
+                      @tags-updated="updateTags($event)"
+                      :only-existing-tags="true"
+                      id-field="id"
+                      text-field="name"
+                      :existing-tags="allTags"
+                      :typeahead="true"
+                      placeholder="Select tags"
+                      :typeahead-activation-threshold="0"
+                      :typeahead-max-results="10"
+          >
+            <template v-slot:selected-tag="{ tag, index, removeTag }">
+              {{tag.name}}
+              <span class="is-danger" @click.prevent="removeTag(index)">X</span>
 
-      <div v-for="(command, index) of workingTopic.commands"
-           :key="index"
-      class="command_item">
-        <input type="text" class="nes-input"
-               autocomplete="off"
-               v-model="command.name">
-
-        <button type="button" class="nes-btn is-error" @click="removeCommand(index)">X</button>
-        <br/>
-
-        <textarea class="nes-textarea"
-                  v-model="command.content"></textarea>
+            </template>
+          </tags-input>
+        </div>
 
       </div>
-    </div>
 
-    <br>
-    <div v-if="workingTopic.gameName || workingTopic.tags">
+      <div class="column">
+      <div class="nes-field">
+        <label>
+          Commands
+
+          <button type="button" class="nes-btn" @click="addCommand()">Add new command</button>
+        </label>
+
+        <div v-for="(command, index) of workingTopic.commands"
+             :key="index"
+        class="command_item">
+          <input type="text" class="nes-input"
+                 autocomplete="off"
+                 v-model="command.name">
+
+          <button type="button" class="nes-btn is-error" @click="removeCommand(index)">X</button>
+          <br/>
+
+          <textarea class="nes-textarea"
+                    v-model="command.content"></textarea>
+
+        </div>
+      </div>
+
       <br>
-      Game: {{workingTopic.gameName}} <br />
-      <br>
+      <div v-if="workingTopic.gameName || workingTopic.tags">
+        <br>
+        Game: {{workingTopic.gameName}} <br />
+        <br>
+      </div>
+
+      <br/>
+      <button type="button" class="nes-btn"
+              :class="{'is-is-error': loggedIn, 'is-disabled': !loggedIn}"
+              @click="importFromTwitch()">Import from Twitch</button>
+
     </div>
+    </div>
+  </scrolling-content>
 
-    <br/>
-    <button type="button" class="nes-btn"
-            :class="{'is-is-error': loggedIn, 'is-disabled': !loggedIn}"
-            @click="importFromTwitch()">Import from Twitch</button>
+  <br/>
 
-    <br/>
-    <br/>
-    <button type="button" class="nes-btn is-error" @click="cancel()">Cancel</button>
-    <button type="button" class="nes-btn" @click="save()">Save</button>
+  <button v-if="!!workingTopic.id" type="button" class="nes-btn is-error"
+          @click="archiveTopic()">Archive</button>
 
-  </div>
+  <button type="button" class="nes-btn is-error" @click="cancel()">Cancel</button>
+  <button type="button" class="nes-btn" @click="save()">Save</button>
+
 </template>
 
 <script lang="ts">
@@ -121,10 +147,12 @@ import { TagData, Topic } from '@/types';
 import { store } from '@/state';
 import { twitch } from '@/twitch-instance';
 import TagsInput from '@voerro/vue-tagsinput';
-import { generateTitle } from '@/utils';
+import { convertTwitchTagsToTagData, generateNotification, generateTitle } from '@/utils';
+import ScrollingContent from '@/components/ScrollingContent.vue';
 
 export default defineComponent({
   components: {
+    ScrollingContent,
     TagsInput
   },
   props: {
@@ -160,10 +188,15 @@ export default defineComponent({
         ...this.workingTopic
       });
     },
-    isTemplateInvalid (): boolean {
-      return this.notValidExplanation !== '';
+    generatedNotification (): string {
+      return generateNotification({
+        ...this.workingTopic
+      });
     },
-    notValidExplanation (): string {
+    isTemplateInvalid (): boolean {
+      return this.notValidTemplateExplanation !== '';
+    },
+    notValidTemplateExplanation (): string {
       const template = this.workingTopic.template;
 
       if (!template) {
@@ -179,6 +212,30 @@ export default defineComponent({
 
       if (titleLength > 140) {
         return `A generated topic can be only 140 characters long. (Using 100 as counter) - Current Length: ${titleLength}`;
+      }
+
+      return '';
+    },
+
+    isNotificationInvalid (): boolean {
+      return this.notValidNotificationExplanation !== '';
+    },
+    notValidNotificationExplanation (): string {
+      const template = this.workingTopic.notificationText;
+
+      if (!template) {
+        return 'You need a going live notification.';
+      }
+
+      const generatedTitle = generateTitle({
+        ...this.workingTopic,
+        currentCounter: 100
+      });
+
+      const titleLength = generatedTitle.length;
+
+      if (titleLength > 140) {
+        return `A generated notification can be only 140 characters long. (Using 100 as counter) - Current Length: ${titleLength}`;
       }
 
       return '';
@@ -212,12 +269,7 @@ export default defineComponent({
 
       console.info({ channelInfo, tags });
 
-      const importedTags = tags
-        .filter((t) => !t.is_auto)
-        .map((t) => ({
-          id: t.tag_id,
-          name: t.localization_names['en-us']
-        }) as TagData);
+      const importedTags = convertTwitchTagsToTagData(tags);
 
       console.info({ tags, importedTags });
       this.workingTopic.importTags = importedTags;
@@ -261,6 +313,10 @@ export default defineComponent({
     },
     removeCommand (index: number) {
       this.workingTopic.commands.splice(index, 1);
+    },
+    archiveTopic () {
+      this.workingTopic.archived = true;
+      this.save();
     }
   },
   watch: {
@@ -278,6 +334,16 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 @import "~@voerro/vue-tagsinput/dist/style.css";
+
+.topic-form-outer {
+  height: 75vh;
+  width: 100vw;
+  max-width: 1000px;
+}
+
+.column:nth-of-type(2) {
+  margin-left: 1rem;
+}
 
 .nes-field {
   margin-bottom: 1rem;
@@ -316,6 +382,11 @@ export default defineComponent({
 <style lang="scss" >
 
 .topic-form {
+  margin-right: 1rem;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+
   .tags-input-root {
     margin: 8px;
 

@@ -38,9 +38,9 @@
                   v-if="loggedIn">Logout: {{userName}}</button>
           </div>
         </div>
-        <div class="scrolling-content">
-
-          <div v-for="(topic) of state.topics" :key="topic.id">
+        <scrolling-content class="scrolling-content-outer">
+          <div class="scrolling-content-inner">
+            <div v-for="(topic) of currentTopics" :key="topic.id" class="topic-container">
             <div class="nes-container is-rounded is-dark">
               <div>
             <topic-entry :topic="topic"
@@ -54,54 +54,55 @@
               </div>
             </div>
           </div>
-        </div>
+
+            <div class="topic-container">
+            <span v-for="(topic) of archivedTopics" :key="topic.id" class="topic-container">
+              <button @click="unArchiveTopic(topic)"
+                      class="nes-btn is-error">
+                Unarchive: {{topic.title}} [{{topic.currentCounter}}]
+              </button>
+            </span>
+            </div>
+          </div>
+        </scrolling-content>
       </div>
     </div>
     <div class="column">
-      <div class="nes-container is-rounded is-dark with-title"
-           v-if="showNewForm">
-        <p class="title">New Topic</p>
 
-        <closable-panel @cancel="showNewForm = false">
-          <topic-form @save="onAddNew"
-                      @cancel="showNewForm = false"
-                      :loggedIn="loggedIn"
-          ></topic-form>
-        </closable-panel>
-      </div>
-      <div class="nes-container is-rounded is-dark with-title"
-           v-if="formForTopic">
-
-        <p class="title">Edit Topic: {{formForTopic.title}}</p>
-
-        <closable-panel @cancel="formForTopic = undefined">
-          <topic-form :topic="formForTopic"
-                      @save="editTopic"
-                      @cancel="formForTopic = undefined"
-                      :loggedIn="loggedIn"
-          ></topic-form>
-        </closable-panel>
-      </div>
-
-      <div class="nes-container is-rounded is-dark with-title"
-           v-if="showHistory">
-
-        <p class="title">Changed history:</p>
-        <closable-panel @cancel="showHistory = false">
-          <history-list></history-list>
-        </closable-panel>
-      </div>
-
-      <div class="nes-container is-rounded is-dark with-title"
-           v-if="showOptions">
-
-        <p class="title">Options:</p>
-        <closable-panel @cancel="showOptions = false">
-          <options-vue @cancel="showOptions = false"></options-vue>
-        </closable-panel>
-      </div>
     </div>
   </div>
+
+  <modal v-model:opened="showOptions">
+    <options @cancel="showOptions = false"></options>
+  </modal>
+
+  <modal v-model:opened="showHistory">
+    <p class="title">Changed history:</p>
+    <history-list></history-list>
+  </modal>
+
+  <modal v-model:opened="showNewForm">
+    <p class="title">New Topic</p>
+
+    <topic-form @save="onAddNew"
+                @cancel="showNewForm = false"
+                :loggedIn="loggedIn"
+    ></topic-form>
+  </modal>
+
+  <modal :opened="formForTopic != null"
+         @closed="formForTopic = undefined">
+
+    <div v-if="formForTopic">
+      <p class="title">Edit Topic: {{formForTopic.title}}</p>
+
+      <topic-form :topic="formForTopic"
+                  @save="editTopic"
+                  @cancel="formForTopic = undefined"
+                  :loggedIn="loggedIn"
+      ></topic-form>
+    </div>
+  </modal>
 </div>
 </template>
 
@@ -117,6 +118,8 @@ import { twitch } from '@/twitch-instance';
 import TopicEntry from '@/components/TopicEntry.vue';
 import HistoryList from '@/components/HistoryList.vue';
 import OptionsVue from '@/components/Options.vue';
+import ScrollingContent from '@/components/ScrollingContent.vue';
+import Modal from '@/components/Modal.vue';
 
 // TODO extract handler / instance
 
@@ -128,11 +131,13 @@ export const hashParams = new URLSearchParams(location.hash?.replace('#', ''));
 
 @Options({
   components: {
+    Modal,
     TopicForm,
     ClosablePanel,
     TopicEntry,
     HistoryList,
-    OptionsVue
+    Options: OptionsVue,
+    ScrollingContent
   }
 })
 export default class App extends Vue {
@@ -169,6 +174,8 @@ export default class App extends Vue {
     } else {
       this.loggedIn = false;
     }
+
+    store.setLoggedIn(this.loggedIn);
   }
 
   onAddNew (topic: Topic) {
@@ -231,6 +238,19 @@ export default class App extends Vue {
     this.loggedIn = false;
     this.userName = '';
   }
+
+  unArchiveTopic (topic: Topic) {
+    topic.archived = false;
+    store.editTopic(topic);
+  }
+
+  get currentTopics () {
+    return this.state.topics.filter(t => !t.archived);
+  }
+
+  get archivedTopics () {
+    return this.state.topics.filter(t => t.archived);
+  }
 }
 </script>
 
@@ -240,6 +260,10 @@ export default class App extends Vue {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background: #212529;
 }
 
 * {
@@ -267,9 +291,19 @@ export default class App extends Vue {
   flex-direction: column;
 }
 
-.scrolling-content {
+.topic-container {
+  width: calc(50% - 0.5rem);
+}
+
+.scrolling-content-outer {
   flex: 1;
-  overflow-y: auto;
+  //noinspection CssInvalidPropertyValue
+  overflow-y: clip;
+}
+
+.scrolling-content-inner {
+  display: flex;
+  flex-wrap: wrap;
 }
 
 .nes-badge {
@@ -285,6 +319,24 @@ export default class App extends Vue {
     right: 1rem;
     z-index: 999;
     transition: all 0.3s ease;
+}
+
+.vfm__container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.vfm__content {
+  display: flex;
+  flex-direction: column;
+  margin: 0 1rem;
+  padding: 1rem;
+}
+
+.nes-dialog {
+  border-style: solid;
+  border-color: #3e4446 !important;
+  padding: 1rem 1rem;
 }
 
 </style>

@@ -24,6 +24,7 @@ export interface Topic {
   title: string;
   customChannel: string;
   template: string;
+  notificationText: string;
   gameId?: string;
   gameName?: string;
   tags: string;
@@ -31,6 +32,8 @@ export interface Topic {
   importTags?: TagData[];
   commandsJson: string;
   commands: Command[]; // will be saved as json
+
+  archived: boolean;
 }
 
 export interface HistoryEntry {
@@ -50,16 +53,20 @@ export interface State {
   topics: Topic[];
   history: HistoryEntry[];
   tags: Dictionary<TagData>;
+  loggedIn: boolean;
 }
 
 export const INITIAL_TOPIC_OBJECT: Topic = {
   currentCounter: 1,
   title: '',
   template: '',
+  notificationText: '',
   tags: '',
   commands: [],
   commandsJson: '[]',
-  customChannel: ''
+  customChannel: '',
+
+  archived: false
 }
 
 export const INITIAL_HISTORY_OBJECT: HistoryEntry = {
@@ -80,7 +87,6 @@ export interface TwitchChannelTag {
   localization_names: {[key: string]: string};
   tag_id: string;
   is_auto: boolean;
-
 }
 
 export interface TwitchLoginExistsPayload {
@@ -96,6 +102,13 @@ export interface TwitchLoginPayload {
   accessToken: string;
 }
 
+export interface TwitchPaginatedDataResult<T> {
+  data: T[];
+  pagination: {
+    cursor: string;
+  };
+}
+
 // eslint-disable-next-line @typescript-eslint/interface-name-prefix
 export interface ITwitchApiHandler {
   login (): Promise<TwitchLoginPayload>;
@@ -106,4 +119,8 @@ export interface ITwitchApiHandler {
   applyTopicToTwitch (topic: Topic): void;
   writeToChat(command: Command): Promise<void>;
   resetAuth (): void;
+  listFirstTags (
+    after?: string|undefined,
+    first?: number|undefined
+  ): Promise<TwitchPaginatedDataResult<TwitchChannelTag>>;
 }

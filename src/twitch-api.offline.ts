@@ -4,7 +4,7 @@ import {
   Topic,
   TwitchChannelInformation,
   TwitchChannelTag, TwitchLoginExistsPayload,
-  TwitchLoginPayload
+  TwitchLoginPayload, TwitchPaginatedDataResult
 } from '@/types';
 import { generateCommandText } from '@/utils';
 
@@ -49,6 +49,13 @@ export class TwitchApiOfflineHandler implements ITwitchApiHandler {
 
   async writeToChat (command: Command): Promise<void> {
     alert('Writing to chat that!' + generateCommandText(command));
+  }
+
+  listFirstTags (
+    after?: string|undefined,
+    first?: number|undefined
+  ): Promise<TwitchPaginatedDataResult<TwitchChannelTag>> {
+    return Promise.reject(new Error('offline'));
   }
 
   resetAuth (): void {
