@@ -36,6 +36,10 @@
           <button @click="logout()"
                   class="nes-btn is-error"
                   v-if="loggedIn">Logout: {{userName}}</button>
+
+            <button type="button" class="nes-btn is-primary" @click="toggleSettings()">
+              Settings
+            </button>
           </div>
         </div>
         <scrolling-content class="scrolling-content-outer">
@@ -103,6 +107,11 @@
       ></topic-form>
     </div>
   </modal>
+
+  <modal v-model:opened="showSettings" @close="showSettings = false">
+    <p class="title">Settings</p>
+    <Settings />
+  </modal>
 </div>
 </template>
 
@@ -120,6 +129,7 @@ import HistoryList from '@/components/HistoryList.vue';
 import OptionsVue from '@/components/Options.vue';
 import ScrollingContent from '@/components/ScrollingContent.vue';
 import Modal from '@/components/Modal.vue';
+import Settings from '@/components/Settings.vue';
 
 // TODO extract handler / instance
 
@@ -131,6 +141,7 @@ export const hashParams = new URLSearchParams(location.hash?.replace('#', ''));
 
 @Options({
   components: {
+    Settings,
     Modal,
     TopicForm,
     ClosablePanel,
@@ -152,6 +163,7 @@ export default class App extends Vue {
   showHistory = false;
   showOptions = false;
   showNewForm = false;
+  showSettings = false;
   formForTopic?: Topic|null = reactive<any>(null);
 
   async mounted () {
@@ -237,6 +249,10 @@ export default class App extends Vue {
     twitch.resetAuth();
     this.loggedIn = false;
     this.userName = '';
+  }
+
+  toggleSettings () {
+    this.showSettings = !this.showSettings;
   }
 
   unArchiveTopic (topic: Topic) {
