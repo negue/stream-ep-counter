@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-sw.js");
 
 importScripts(
-  "precache-manifest.37551832cc8008a834ac8f36bc04042b.js"
+  "precache-manifest.62e3d739fa6506440f5aadd2cc6cb8bf.js"
 );
 
 workbox.core.setCacheNameDetails({prefix: "stream-ep-counter"});
