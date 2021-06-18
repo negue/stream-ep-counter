@@ -38,7 +38,7 @@
                   v-if="loggedIn">Logout: {{userName}}</button>
           </div>
         </div>
-        <scrolling-content class="scrolling-content-outer">
+        <scrolling-content>
           <div class="scrolling-content-inner">
             <div v-for="(topic) of currentTopics" :key="topic.id" class="topic-container">
             <div class="nes-container is-rounded is-dark">
@@ -293,12 +293,6 @@ body {
 
 .topic-container {
   width: calc(50% - 0.5rem);
-}
-
-.scrolling-content-outer {
-  flex: 1;
-  //noinspection CssInvalidPropertyValue
-  overflow-y: clip;
 }
 
 .scrolling-content-inner {
